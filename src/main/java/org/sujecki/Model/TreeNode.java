@@ -1,18 +1,29 @@
 package org.sujecki.Model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.LinkedList;
 import java.util.List;
 
+
 @Entity
+@Table(name = "treeNode")
 public class TreeNode {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Column(name = "node_id", nullable = false)
+    private Long node_id;
     private String value;
-    @OneToMany
+    private int depth;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private TreeNode parent;
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @BatchSize(size = 100)
     private List<TreeNode> childNodes;
 
     public TreeNode(String value) {
@@ -40,4 +51,11 @@ public class TreeNode {
         return childNodes;
     }
 
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
 }

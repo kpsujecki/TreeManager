@@ -23,8 +23,9 @@ public class TreeNodeController {
 
     @GetMapping("/all")
     public ResponseEntity<List<TreeNode>> getAll() {
+        List<TreeNode> treeNodeList = treeNodeService.getAll();
 
-        return new ResponseEntity<>(List.of(new TreeNode("dsads")), HttpStatus.OK);
+        return new ResponseEntity<>(treeNodeList, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
