@@ -4,6 +4,7 @@ package org.sujecki.Controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.sujecki.Exception.ParentIdRequiredException;
 import org.sujecki.Exception.ParentTreeNodeNotFoundException;
 import org.sujecki.Exception.TreeNodeNotFoundException;
 import org.sujecki.Model.NodeDTO;
@@ -24,6 +25,20 @@ public class TreeNodeController {
         this.treeNodeService = treeNodeService;
     }
 
+    @GetMapping("/")
+    public ResponseEntity<Optional<TreeNode>> getTree() {
+        try {
+            Optional<TreeNode> tree = treeNodeService.getTree();
+            if (tree.isPresent()) {
+                return new ResponseEntity<>(tree, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(tree, HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/all")
     public ResponseEntity<List<TreeNode>> getAll() {
         try {
@@ -39,15 +54,12 @@ public class TreeNodeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TreeNode> getById(@PathVariable long id) {
+    public ResponseEntity<?> getById(@PathVariable long id) {
         try {
-            Optional<TreeNode> user = treeNodeService.getNodeById(id);
-
-            if (user.isPresent()) {
-                return new ResponseEntity<>(user.get(), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(user.get(), HttpStatus.NOT_FOUND);
-            }
+            TreeNode user = treeNodeService.getNodeById(id);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch(TreeNodeNotFoundException treeNodeNotFoundException){
+            return new ResponseEntity<>(treeNodeNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -60,7 +72,9 @@ public class TreeNodeController {
 
             return new ResponseEntity<>(treeNode, HttpStatus.CREATED);
         } catch(ParentTreeNodeNotFoundException parentTreeNodeNotFoundException){
-            return new ResponseEntity<>(parentTreeNodeNotFoundException.getMessage(), HttpStatus.METHOD_FAILURE);
+            return new ResponseEntity<>(parentTreeNodeNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (ParentIdRequiredException parentIdRequiredException){
+            return new ResponseEntity<>(parentIdRequiredException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
     @PatchMapping(path = "/")
@@ -68,10 +82,10 @@ public class TreeNodeController {
         try{
             TreeNode updatedTreeNode = treeNodeService.editNode(treeNode);
             return new ResponseEntity<>(updatedTreeNode, HttpStatus.OK);
-        } catch(TreeNodeNotFoundException TreeNodeNotFoundException){
-            return new ResponseEntity<>(TreeNodeNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
-        } catch(ParentTreeNodeNotFoundException ParentTreeNodeNotFoundException){
-            return new ResponseEntity<>(ParentTreeNodeNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
+        } catch(TreeNodeNotFoundException treeNodeNotFoundException){
+            return new ResponseEntity<>(treeNodeNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
+        } catch(ParentTreeNodeNotFoundException parentTreeNodeNotFoundException){
+            return new ResponseEntity<>(parentTreeNodeNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -80,8 +94,8 @@ public class TreeNodeController {
         try{
             treeNodeService.removeNode(id);
             return new ResponseEntity<>(String.format("Node with ID: %s has been removed", id), HttpStatus.OK);
-        } catch(TreeNodeNotFoundException TreeNodeNotFoundException){
-            return new ResponseEntity<>(TreeNodeNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
+        } catch(TreeNodeNotFoundException treeNodeNotFoundException){
+            return new ResponseEntity<>(treeNodeNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 }

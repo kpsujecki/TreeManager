@@ -1,6 +1,7 @@
 package org.sujecki.Service;
 
 import org.springframework.stereotype.Service;
+import org.sujecki.Exception.ParentIdRequiredException;
 import org.sujecki.Exception.ParentTreeNodeNotFoundException;
 import org.sujecki.Exception.TreeNodeNotFoundException;
 import org.sujecki.Model.NodeDTO;
@@ -19,25 +20,41 @@ public class TreeNodeService {
         this.treeNodeRepository = treeNodeRepository;
     }
 
+    public Optional<TreeNode> getTree(){
 
+        return findTreeRoot();
+    }
     public List<TreeNode> getAllNode(){
         return treeNodeRepository.findAll();
     }
-    public Optional<TreeNode> getNodeById(Long id){
-        Optional<TreeNode> treeNode = treeNodeRepository.findById(id);
+    public TreeNode getNodeById(Long id){
+        TreeNode treeNode = treeNodeRepository.findById(id).orElseThrow(()
+                -> new TreeNodeNotFoundException(String.format("TreeNode with ID: %s is not found", id)));
 
         return treeNode;
     }
 
     public TreeNode addNode(NodeDTO treeNode){
         TreeNode newTreeNode = new TreeNode();
-        Optional<TreeNode> parentNode = treeNodeRepository.findById(treeNode.getParent_id());
 
-        newTreeNode.setValue(treeNode.getValue());
-        newTreeNode.setParent(parentNode.orElseThrow(()
-                -> new ParentTreeNodeNotFoundException(String.format("Parent with ID: %s is not found", treeNode.getParent_id()))));
+        if(treeNode.isNewTreeRoot()){
+            Optional<TreeNode> actualTreeNodeRoot = findTreeRoot();
+            newTreeNode.setValue(treeNode.getValue());
+            if(actualTreeNodeRoot.isPresent()) {
+                actualTreeNodeRoot.get().setParent(newTreeNode);
+            }
+            treeNodeRepository.save(newTreeNode);
+        }else {
+            if (treeNode.getParent_id() == null && findTreeRoot().isPresent())
+                throw new ParentIdRequiredException("Tree has a root, ParentId is required!");
 
-        treeNodeRepository.save(newTreeNode);
+            Optional<TreeNode> parentNode = treeNodeRepository.findById(treeNode.getParent_id());
+
+            newTreeNode.setValue(treeNode.getValue());
+            newTreeNode.setParent(parentNode.orElseThrow(()
+                    -> new ParentTreeNodeNotFoundException(String.format("Parent with ID: %s is not found", treeNode.getParent_id()))));
+            treeNodeRepository.save(newTreeNode);
+        }
 
         return newTreeNode;
     }
@@ -52,8 +69,8 @@ public class TreeNodeService {
         }
 
         newTreeNode.setValue(treeNode.getValue());
-
         treeNodeRepository.save(newTreeNode);
+
         return newTreeNode;
     }
 
@@ -64,4 +81,10 @@ public class TreeNodeService {
         treeNodeRepository.delete(treeNodeToRemove);
     }
 
+    private Optional<TreeNode> findTreeRoot(){
+        Optional<TreeNode> root = treeNodeRepository.findAll().stream()
+                .filter(TreeNode::isRoot).findAny();
+
+        return root;
+    }
 }

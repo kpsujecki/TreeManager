@@ -17,7 +17,7 @@ public class TreeNode {
     @Column(name = "node_id", nullable = false)
     private Long node_id;
     private String value;
-    private int depth;
+
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "parent_id")
@@ -40,24 +40,12 @@ public class TreeNode {
         this.childNodes.add(childNode);
     }
 
-    public void showTreeNodes() {
-        //BreathFirstSearchPrintTreeNodes.printNodes(this);
-    }
-
     public String getValue() {
         return value;
     }
 
     public List<TreeNode> getChildNodes() {
         return childNodes;
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 
     public Long getNode_id() {
@@ -78,5 +66,17 @@ public class TreeNode {
 
     public TreeNode getParent() {
         return parent;
+    }
+
+    public boolean isRoot(){
+        return parent == null;
+    }
+
+    public int getDepth() {
+        if(isRoot()){
+            return 0;
+        }else{
+            return this.parent.getDepth() + 1;
+        }
     }
 }
