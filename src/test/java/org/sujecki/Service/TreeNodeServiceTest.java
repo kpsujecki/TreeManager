@@ -9,7 +9,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.sujecki.Exeption.ParentTreeNodeNotFoundException;
+import org.sujecki.Exception.ParentTreeNodeNotFoundException;
+import org.sujecki.Exception.TreeNodeNotFoundException;
 import org.sujecki.Model.NodeDTO;
 import org.sujecki.Model.TreeNode;
 import org.sujecki.Reposiotry.TreeNodeRepository;
@@ -33,35 +34,39 @@ class TreeNodeServiceTest {
     @InjectMocks
     TreeNodeService treeNodeService;
 
-    private TreeNode treeNode;
+    private TreeNode parentTreeNode;
 
+    private TreeNode childTreeNode;
     @BeforeEach
     void init(){
         treeNodeRepository = Mockito.mock(TreeNodeRepository.class);
         treeNodeService = new TreeNodeService(treeNodeRepository);
 
-        treeNode = new TreeNode();
-        treeNode.setValue("PARENT");
-        treeNode.setParent(null);
-        treeNode.setNode_id(1L);
+        parentTreeNode = new TreeNode();
+        parentTreeNode.setValue("PARENT");
+        parentTreeNode.setParent(null);
+        parentTreeNode.setNode_id(1L);
 
+        childTreeNode = new TreeNode();
+        childTreeNode.setValue("CHILD");
+        childTreeNode.setParent(parentTreeNode);
+        childTreeNode.setNode_id(2L);
     }
 
     @Test
     void nodeIsAddedCorrectly() {
         //given
         NodeDTO nodeDTO = new NodeDTO();
-        nodeDTO.setParent_id(treeNode.getNode_id());
+        nodeDTO.setParent_id(parentTreeNode.getNode_id());
         nodeDTO.setValue("TEST");
-        given(treeNodeRepository.findById(treeNode.getNode_id())).willReturn(Optional.ofNullable(treeNode));
+        given(treeNodeRepository.findById(parentTreeNode.getNode_id())).willReturn(Optional.ofNullable(parentTreeNode));
 
         //when
-        Optional<TreeNode> savedTreeNode = treeNodeService.addNode(nodeDTO);
+        TreeNode savedTreeNode = treeNodeService.addNode(nodeDTO);
 
         //then
         assertThat(savedTreeNode).isNotNull();
-        assertTrue(savedTreeNode.get().getParent().getNode_id()==treeNode.getNode_id());
-
+        assertTrue(savedTreeNode.getParent().getNode_id()== parentTreeNode.getNode_id());
     }
 
     @Test
@@ -70,7 +75,7 @@ class TreeNodeServiceTest {
         NodeDTO nodeDTO = new NodeDTO();
         nodeDTO.setParent_id(3L);
         nodeDTO.setValue("TEST");
-        given(treeNodeRepository.findById(treeNode.getNode_id())).willReturn(Optional.ofNullable(treeNode));
+        given(treeNodeRepository.findById(parentTreeNode.getNode_id())).willReturn(Optional.ofNullable(parentTreeNode));
 
         // when -  action or the behaviour that we are going test
         assertThrows(ParentTreeNodeNotFoundException.class, () -> {
@@ -79,6 +84,44 @@ class TreeNodeServiceTest {
 
         // then
         verify(treeNodeRepository, never()).save(any(TreeNode.class));
+    }
 
+    @Test
+    void nodeIsEditedCorrectly() {
+        //given
+        NodeDTO newTreeNode = new NodeDTO();
+        newTreeNode.setValue("EDITED PARENT");
+        newTreeNode.setParent_id(null);
+        newTreeNode.setNode_id(1L);
+
+        given(treeNodeRepository.findById(parentTreeNode.getNode_id())).willReturn(Optional.ofNullable(parentTreeNode));
+
+        //when
+        TreeNode editedTreeNode = treeNodeService.editNode(newTreeNode);
+
+        //then
+        assertThat(editedTreeNode).isNotNull();
+        assertTrue(editedTreeNode.getNode_id() == parentTreeNode.getNode_id());
+        assertTrue(editedTreeNode.getChildNodes() == parentTreeNode.getChildNodes());
+        assertFalse(editedTreeNode.getValue() != parentTreeNode.getValue());
+    }
+
+    @Test
+    void nodeIsNotEditedWhenNodeIdIsWrong() {
+        //given
+        NodeDTO newTreeNode = new NodeDTO();
+        newTreeNode.setValue("EDITED PARENT");
+        newTreeNode.setParent_id(null);
+        newTreeNode.setNode_id(3L);
+
+        given(treeNodeRepository.findById(parentTreeNode.getNode_id())).willReturn(null);
+
+        // when -  action or the behaviour that we are going test
+        assertThrows(TreeNodeNotFoundException.class, () -> {
+            treeNodeService.editNode(newTreeNode);
+        });
+
+        // then
+        verify(treeNodeRepository, never()).save(any(TreeNode.class));
     }
 }

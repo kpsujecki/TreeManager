@@ -2,10 +2,19 @@ package org.sujecki.Model;
 
 public class NodeDTO {
 
+    private Long node_id;
     private String value;
     private Long parent_id;
 
     public NodeDTO() {
+    }
+
+    public Long getNode_id() {
+        return node_id;
+    }
+
+    public void setNode_id(Long node_id) {
+        this.node_id = node_id;
     }
 
     public String getValue() {

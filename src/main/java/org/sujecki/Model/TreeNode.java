@@ -23,7 +23,7 @@ public class TreeNode {
     @JoinColumn(name = "parent_id")
     @JsonIgnore
     private TreeNode parent;
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @BatchSize(size = 100)
     private List<TreeNode> childNodes;
 
