@@ -2,9 +2,9 @@ package org.sujecki.Controller;
 
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.sujecki.Model.NodeDTO;
 import org.sujecki.Model.TreeNode;
 import org.sujecki.Service.TreeNodeService;
 
@@ -23,15 +23,19 @@ public class TreeNodeController {
 
     @GetMapping("/all")
     public ResponseEntity<List<TreeNode>> getAll() {
-        List<TreeNode> treeNodeList = treeNodeService.getAll();
+        List<TreeNode> treeNodeList = treeNodeService.getAllNode();
 
-        return new ResponseEntity<>(treeNodeList, HttpStatus.OK);
+        if (!treeNodeList.isEmpty()) {
+            return new ResponseEntity<>(treeNodeList, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(treeNodeList, HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TreeNode> getById(@PathVariable long id) {
 
-        Optional<TreeNode> user = treeNodeService.getById(id);
+        Optional<TreeNode> user = treeNodeService.getNodeById(id);
 
         if (user.isPresent()) {
             return new ResponseEntity<>(user.get(), HttpStatus.OK);
@@ -40,16 +44,14 @@ public class TreeNodeController {
         }
     }
 
-    @PostMapping(path = "/",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TreeNode> createNode(@RequestBody TreeNode newTreeNode) {
+    @PostMapping(path = "/")
+    public ResponseEntity<Optional<TreeNode>> createNode(@RequestBody NodeDTO newTreeNode) {
+        Optional<TreeNode> treeNode = treeNodeService.addNode(newTreeNode);
 
-        TreeNode treeNode = treeNodeService.addTreeNode(newTreeNode);
-        if (treeNode == null) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        } else {
+        if (treeNode.isPresent()) {
             return new ResponseEntity<>(treeNode, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.valueOf("NOT_ADDED"));
         }
     }
 }
