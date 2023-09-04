@@ -1,8 +1,12 @@
 package org.sujecki.Controller;
 
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.sujecki.Exception.ParentIdRequiredException;
 import org.sujecki.Exception.ParentTreeNodeNotFoundException;
@@ -19,6 +23,7 @@ import java.util.Optional;
 @RequestMapping("/api/tree")
 public class TreeNodeController {
 
+    private static Logger logger = LogManager.getLogger(TreeNodeController.class);
     private final TreeNodeService treeNodeService;
 
     public TreeNodeController(TreeNodeService treeNodeService){

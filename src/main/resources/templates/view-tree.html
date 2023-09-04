@@ -1,0 +1,7 @@
+<div th:switch="${nodes}">
+    <h2 th:case="null">No nodes yet!</h2>
+    <div th:case="*">
+        <h2>Nodes</h2>
+        <p th:text="'TreeNode: ' + ${nodes}"  style="white-space: pre"></p>
+    </div>
+</div>
