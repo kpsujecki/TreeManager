@@ -40,8 +40,19 @@ There is a schema.sql file in the project, which is what creates the database sc
 Also included is the basic data from the data.sql file
 
 ## Endpoints
+
 All endpoints can be displayed using Swagger, which is attached to the project. Just follow the link below. It depends on the port on which the application is running
 http://localhost:8080/swagger-ui/index.html
+
+At this address, you can see a page that displays JSON with the entire tree hierarchy from the root:
+
+http://localhost:8080/viewTree
+
+## TODO
+* Improve frontend app 
+* Add move/copy node/leaf in any place in tree
+* Possibility to create multiple trees
+* 
 ## Copyright
 
 Released under the Apache License 2.0. See the [LICENSE](https://github.com/codecentric/springboot-sample-app/blob/master/LICENSE) file.
