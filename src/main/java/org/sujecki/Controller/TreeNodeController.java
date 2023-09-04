@@ -1,12 +1,10 @@
 package org.sujecki.Controller;
 
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.sujecki.Exception.ParentIdRequiredException;
 import org.sujecki.Exception.ParentTreeNodeNotFoundException;
@@ -30,6 +28,7 @@ public class TreeNodeController {
         this.treeNodeService = treeNodeService;
     }
 
+    //This endpoint returns us the tree in the hierarchy from the root
     @GetMapping("/")
     public ResponseEntity<Optional<TreeNode>> getTree() {
         try {
@@ -44,6 +43,7 @@ public class TreeNodeController {
         }
     }
 
+    //This endpoint returns us the all node in tree
     @GetMapping("/all")
     public ResponseEntity<List<TreeNode>> getAll() {
         try {
@@ -58,6 +58,7 @@ public class TreeNodeController {
         }
     }
 
+    //This endpoint returns us node by id together with his descendants
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable long id) {
         try {
@@ -70,6 +71,7 @@ public class TreeNodeController {
         }
     }
 
+    //This endpoint allow us to create a new node
     @PostMapping(path = "/")
     public ResponseEntity<?> createNode(@RequestBody NodeDTO newTreeNode) {
         try{
@@ -82,6 +84,8 @@ public class TreeNodeController {
             return new ResponseEntity<>(parentIdRequiredException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    //This endpoint allow us to edit existing node
     @PatchMapping(path = "/")
     public ResponseEntity<?> updateNode(@RequestBody NodeDTO treeNode) {
         try{
@@ -94,6 +98,7 @@ public class TreeNodeController {
         }
     }
 
+    //This endpoint allow us to remove existing node
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<?> removeNode(@PathVariable long id) {
         try{

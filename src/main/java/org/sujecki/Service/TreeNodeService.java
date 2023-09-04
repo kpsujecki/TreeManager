@@ -88,6 +88,7 @@ public class TreeNodeService {
         logger.info("The node has been successfully removed {} ", treeNodeToRemove);
     }
 
+    //method finding root in tree
     private Optional<TreeNode> findTreeRoot(){
         Optional<TreeNode> root = treeNodeRepository.findAll().stream()
                 .filter(TreeNode::isRoot).findAny();
@@ -95,6 +96,7 @@ public class TreeNodeService {
         return root;
     }
 
+    //method replaced root in tree
     private void replaceTreeRoot(NodeDTO treeNode, TreeNode newTreeNode){
         Optional<TreeNode> actualTreeNodeRoot = findTreeRoot();
         newTreeNode.setValue(treeNode.getValue());

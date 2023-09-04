@@ -39,6 +39,7 @@ public class TreeNode {
         return childNodes.isEmpty();
     }
 
+    //This getter finding totals from all nodes on the way to the root
     public int getDepth() {
         if(isRoot()){
             return 0;
