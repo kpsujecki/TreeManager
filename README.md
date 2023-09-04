@@ -9,7 +9,7 @@ For building and running the application you need:
 - [JDK 19](https://www.oracle.com/java/technologies/javase/jdk19-archive-downloads.html)
 - [Maven 4](https://maven.apache.org)
 - [HSQLDB](https://hsqldb.org/)
-
+- [Spring Boot 3](http://projects.spring.io/spring-boot/)
 ## Running the application locally
 
 There are several ways to run a Spring Boot application on your local machine. One way is to execute the `main` method in the `org.sujecki.TreeManagerApplication` class from your IDE.
