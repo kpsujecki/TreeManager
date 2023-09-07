@@ -47,4 +47,12 @@ public class TreeNode {
             return this.parent.getDepth() + 1;
         }
     }
+
+    public Long getParentId(){
+        if(isRoot()){
+            return null;
+        }else{
+            return this.parent.nodeId;
+        }
+    }
 }
