@@ -84,6 +84,9 @@ public class TreeNodeService {
         TreeNode treeNodeToRemove = treeNodeRepository.findById(id).orElseThrow(()
                 -> new TreeNodeNotFoundException(String.format("TreeNode with ID: %s is not found", id)));
 
+        if(!treeNodeToRemove.isRoot()){
+            treeNodeRepository.findById(treeNodeToRemove.getParentId()).get().removeChild(treeNodeToRemove);
+        }
         treeNodeRepository.delete(treeNodeToRemove);
         logger.info("The node has been successfully removed {} ", treeNodeToRemove);
     }

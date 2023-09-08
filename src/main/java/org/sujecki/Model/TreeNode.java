@@ -23,12 +23,16 @@ public class TreeNode {
     @JoinColumn(name = "parent_id")
     @JsonIgnore
     private TreeNode parent;
-    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval=true)
     @BatchSize(size = 100)
     private List<TreeNode> childNodes;
 
     public void addChild(TreeNode childNode) {
         this.childNodes.add(childNode);
+    }
+
+    public void removeChild(TreeNode childNode) {
+        this.childNodes.remove(childNode);
     }
 
     public boolean isRoot(){

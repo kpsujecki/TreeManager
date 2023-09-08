@@ -51,21 +51,61 @@
 
 </div>
 
+<div id="dialogDelete" class="modal fade bs-modal-sm" tabindex="-2" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Deleting node</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        Are you sure you want to remove node?
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                <button id="ok" type="button" class="btn btn-primary">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="dialogEdit" class="modal fade bs-modal-sm" tabindex="-2" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Editing node</h4>
+            </div>
+            <div class="modal-body">
+                <div class="rowEdit">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                <button id="okEdit" type="button" class="btn btn-primary">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
 <script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 <script th:src="@{/assets/jquery-treetable/jquery.treetable.js}"></script>
 
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(document).ready(getData());
+    function getData() {
         $.ajax({
             "type": 'get',
             "url": '/api/tree/all',
             "dataType": "json",
             "success": function (data) {
                 $.each(data, function (idx, obj) {
-                    $("#treeTable").append(`<tr data-tt-id="${obj.nodeId}" data-tt-parent-id="${obj.parentId}"><td>${obj.value}</td><td>${obj.depth}</td><td><button id="${obj.nodeId}">edit</button><button id="${obj.nodeId}">delete</button></td></tr>`);
-
+                    $("#treeTable").append(`<tr id=${obj.nodeId} data-tt-id="${obj.nodeId}" data-tt-parent-id="${obj.parentId}"><td>${obj.value}</td><td>${obj.depth}</td><td><button onclick="edit('${obj}')">edit</button><button onclick="del('${obj.nodeId}')">delete</button></td></tr>`);
                 });
                 $("#treeTable").treetable({
                     expandable: true,
@@ -73,9 +113,61 @@
                     clickableNodeNames: true,
                     indent: 30
                 });
+                $("#treeTable").on("mousedown", "tr", function() {
+                    $(".selected").not(this).removeClass("selected");
+                    $(this).toggleClass("selected");
+                });
             }
         });
-    });
+    }
+    function del(nodeId){
+        var dialog = $("#dialogDelete");
+        dialog.modal("show");
+        dialog.find("#ok").unbind("click");
+        dialog.find("#ok").bind("click", function(event){
+            var btn = $(this);
+            btn.button("loading");
+            $.ajax({
+                "type": 'delete',
+                "url": '/api/tree/'+nodeId,
+                "dataType": "json",
+                statusCode: {
+                    404: function(responseObject, textStatus, jqXHR) {
+                    },
+                    200: function(responseObject, textStatus, errorThrown) {
+                    document.querySelector("#\\3"+nodeId+" ").remove();
+                    }
+                }
+            });
+            btn.button("reset");
+            dialog.modal("hide");
+        });
+    }
+    function edit(obj){
+        var dialog = $("#dialogEdit");
+
+        document.querySelector("#dialogEdit > div > div > div.modal-body > div").append(${obj.nodeId});
+        dialog.modal("show");
+        dialog.find("#okEdit").unbind("click");
+        dialog.find("#okEdit").bind("click", function(event){
+            var btn = $(this);
+            btn.button("loading");
+            $.ajax({
+                "type": 'patch',
+                "url": '/api/tree/'+nodeId,
+                "dataType": "json",
+                statusCode: {
+                    404: function(responseObject, textStatus, jqXHR) {
+                    },
+                    200: function(responseObject, textStatus, errorThrown) {
+                        document.querySelector("#\\3"+nodeId+" ").remove();
+                    }
+                }
+            });
+            btn.button("reset");
+            dialog.modal("hide");
+        });
+    }
 </script>
 
 </body>
