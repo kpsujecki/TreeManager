@@ -1,5 +1,6 @@
 package org.sujecki.Service;
 
+import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class TreeNodeService {
         return treeNode;
     }
 
+    @Transactional
     public TreeNode addNode(NodeDTO treeNode){
         TreeNode newTreeNode = new TreeNode();
         logger.info("Adding new Node from NodeDTO {}", treeNode);
@@ -61,6 +63,7 @@ public class TreeNodeService {
         return newTreeNode;
     }
 
+    @Transactional
     public TreeNode editNode(NodeDTO treeNode){
         TreeNode newTreeNode = treeNodeRepository.findById(treeNode.getNodeId()).orElseThrow(()
                 -> new TreeNodeNotFoundException(String.format("TreeNode with ID: %s is not found", treeNode.getNodeId())));
@@ -71,10 +74,13 @@ public class TreeNodeService {
             newTreeNode.setParent(treeNodeRepository.findById(treeNode.getParentId()).orElseThrow(()
                     -> new ParentTreeNodeNotFoundException(String.format("Parent with ID: %s is not found", treeNode.getParentId()))));
         }
-        if(treeNode.getParentId() == null && treeNode.getIsNewTreeRoot() && !newTreeNode.isRoot()) replaceTreeRoot(treeNode, newTreeNode);
-
-        newTreeNode.setValue(treeNode.getValue());
-        treeNodeRepository.save(newTreeNode);
+        if(treeNode.getParentId() == null && treeNode.getIsNewTreeRoot() && !newTreeNode.isRoot()) {
+            replaceTreeRoot(treeNode, newTreeNode);
+            treeNodeRepository.save(newTreeNode);
+        }else{
+            newTreeNode.setValue(treeNode.getValue());
+            treeNodeRepository.save(newTreeNode);
+        }
 
         logger.info("The node has been successfully edited {} ", newTreeNode);
         return newTreeNode;
@@ -107,6 +113,7 @@ public class TreeNodeService {
 
         if(actualTreeNodeRoot.isPresent()) {
             actualTreeNodeRoot.get().setParent(newTreeNode);
+            newTreeNode.addChild(actualTreeNodeRoot.get());
         }
     }
 }

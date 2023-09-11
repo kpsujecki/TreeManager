@@ -47,8 +47,8 @@ http://localhost:8080/swagger-ui/index.html
 To test these endpoints, I recommend using Postman. 
 
 
-- At this address, you can see a page that displays JSON with the entire tree hierarchy from the root:
-  http://localhost:8080/viewTree
+- At this address, you can see a web page with base CRUD funcionallity
+  http://localhost:8080/
 ## TODO
 * Improve frontend app 
 * Add move/copy node/leaf in any place in tree

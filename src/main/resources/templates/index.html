@@ -26,6 +26,9 @@
                         <span class="sr-only">(current)</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/add">Add node</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -80,13 +83,11 @@
                 <h4 class="modal-title">Editing node</h4>
             </div>
             <div class="modal-body">
-                <div class="rowEdit">
+                <div id="rowEdit" class="rowEdit">
 
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-                <button id="okEdit" type="button" class="btn btn-primary">Yes</button>
             </div>
         </div>
     </div>
@@ -105,7 +106,7 @@
             "dataType": "json",
             "success": function (data) {
                 $.each(data, function (idx, obj) {
-                    $("#treeTable").append(`<tr id=${obj.nodeId} data-tt-id="${obj.nodeId}" data-tt-parent-id="${obj.parentId}"><td>${obj.value}</td><td>${obj.depth}</td><td><button onclick="edit('${obj}')">edit</button><button onclick="del('${obj.nodeId}')">delete</button></td></tr>`);
+                    $("#treeTable").append(`<tr id=${obj.nodeId} data-tt-id="${obj.nodeId}" data-tt-parent-id="${obj.parentId}"><td>${obj.value}</td><td>${obj.depth}</td><td><button onclick='edit(${JSON.stringify(obj)})'> edit</button><button onclick="del('${obj.nodeId}')">delete</button></td></tr>`);
                 });
                 $("#treeTable").treetable({
                     expandable: true,
@@ -145,22 +146,61 @@
     }
     function edit(obj){
         var dialog = $("#dialogEdit");
-
-        document.querySelector("#dialogEdit > div > div > div.modal-body > div").append(${obj.nodeId});
+        console.log(obj)
+        dialog.find(" #rowEdit").empty().append(`
+                <div class="modal-body">
+                    <label>VALUE</label>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="value" id="valueInput" name="grade_name" value="${obj.value}" required>
+                    </div>
+                    <label>PARENT_ID</label>
+                    <div class="form-group">
+                        <input type="number" class="form-control" placeholder="parentId" id="parentIdInput" name="display_order" value="${obj.parentId}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-secondary" data-dismiss="modal">
+                        <i class="bx bx-x d-block d-sm-none"></i>
+                        <span class="d-none d-sm-block">Close</span>
+                    </button>
+                    <button id="submitEdit" class="btn btn-primary ml-1">
+                        <i class="bx bx-check d-block d-sm-none"></i>
+                        <span class="d-none d-sm-block">Update</span>
+                    </button>
+                </div>
+            `)
         dialog.modal("show");
         dialog.find("#okEdit").unbind("click");
-        dialog.find("#okEdit").bind("click", function(event){
+        dialog.find("#submitEdit").bind("click", function(event){
+            var parentId = $("#parentIdInput").val();
+            var value = $("#valueInput").val();
+            var isNewTreeRoot = false;
+
+            if(parentId == ""){
+                isNewTreeRoot = true;
+            }
+
+
             var btn = $(this);
+
             btn.button("loading");
             $.ajax({
                 "type": 'patch',
-                "url": '/api/tree/'+nodeId,
-                "dataType": "json",
+                "url": '/api/tree/',
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "data": JSON.stringify({
+                    "nodeId": obj.nodeId,
+                    "value": value,
+                    "parentId": parentId,
+                    "isNewTreeRoot": isNewTreeRoot
+                }),
                 statusCode: {
                     404: function(responseObject, textStatus, jqXHR) {
                     },
                     200: function(responseObject, textStatus, errorThrown) {
-                        document.querySelector("#\\3"+nodeId+" ").remove();
+                        location.reload();
                     }
                 }
             });

@@ -1,16 +1,19 @@
 package org.sujecki.Model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
 @Entity
 @Table(name = "treeNode")
-@Data
+@Getter
+@Setter
 public class TreeNode {
 
     @Id
@@ -23,9 +26,9 @@ public class TreeNode {
     @JoinColumn(name = "parent_id")
     @JsonIgnore
     private TreeNode parent;
-    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval=true)
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 100)
-    private List<TreeNode> childNodes;
+    private List<TreeNode> childNodes = new ArrayList<>();
 
     public void addChild(TreeNode childNode) {
         this.childNodes.add(childNode);
@@ -35,28 +38,32 @@ public class TreeNode {
         this.childNodes.remove(childNode);
     }
 
-    public boolean isRoot(){
+    public boolean isRoot() {
         return parent == null;
     }
 
-    public boolean isLeaf(){
+    public boolean isLeaf() {
         return childNodes.isEmpty();
     }
 
     //This getter finding totals from all nodes on the way to the root
+
     public int getDepth() {
-        if(isRoot()){
-            return 0;
-        }else{
-            return this.parent.getDepth() + 1;
+        int depth = 0;
+        if (this.getParent() != null) {
+            depth = this.getParent().getDepth() + 1;
+        }
+        return depth;
+    }
+
+    public Long getParentId() {
+        if (isRoot()) {
+            return null;
+        } else {
+            return this.parent.nodeId;
         }
     }
 
-    public Long getParentId(){
-        if(isRoot()){
-            return null;
-        }else{
-            return this.parent.nodeId;
-        }
+    public TreeNode() {
     }
 }
